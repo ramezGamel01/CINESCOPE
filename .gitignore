@@ -38,3 +38,5 @@ node_modules/
 .workspace/
 .env
 node_modules/
+.vercel
+*.tsbuildinfo

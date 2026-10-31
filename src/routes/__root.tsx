@@ -9,7 +9,6 @@ import {
 import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
-import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 
@@ -31,7 +30,7 @@ function NotFoundComponent() {
 function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   const router = useRouter();
   useEffect(() => {
-    reportLovableError(error, { boundary: "tanstack_root_error_component" });
+    console.error(error);
   }, [error]);
   return (
     <div className="flex min-h-[70vh] flex-col items-center justify-center px-4 text-center">
@@ -80,8 +79,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "description", content: "Search, discover, and save your favorite movies. Browse trending films with CineScope." },
       { property: "og:description", content: "Search, discover, and save your favorite movies. Browse trending films with CineScope." },
       { name: "twitter:description", content: "Search, discover, and save your favorite movies. Browse trending films with CineScope." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/29257741-1c05-4a8b-9724-cc3d8d95aca2/id-preview-22c74fdb--4a376bd4-4386-4b29-bd87-b356b0a96904.lovable.app-1783388804165.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/29257741-1c05-4a8b-9724-cc3d8d95aca2/id-preview-22c74fdb--4a376bd4-4386-4b29-bd87-b356b0a96904.lovable.app-1783388804165.png" },
+      { property: "og:image", content: "https://cinescope-gamma-ruby.vercel.app/og-image.jpg" },
+      { name: "twitter:image", content: "https://cinescope-gamma-ruby.vercel.app/og-image.jpg" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
