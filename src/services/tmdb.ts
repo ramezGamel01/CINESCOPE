@@ -1,43 +1,69 @@
+import { createServerFn } from "@tanstack/react-start";
 import { catalogDetail, catalogTrending, searchCatalog } from "@/services/catalog";
 import type { Movie, MovieDetail } from "@/types/movie";
 
-const API_KEY = import.meta.env.VITE_TMDB_API_KEY as string | undefined;
 const BASE_URL = "https://api.themoviedb.org/3";
 export const IMG_BASE = "https://image.tmdb.org/t/p";
 
-export const hasApiKey = () => Boolean(API_KEY);
+type TmdbCall =
+  { kind: "trending" } | { kind: "search"; query: string } | { kind: "detail"; id: string };
 
-async function tmdb<T>(path: string, params: Record<string, string> = {}): Promise<T> {
-  if (!API_KEY) {
-    throw new Error("Missing TMDB API key. Create a .env file with VITE_TMDB_API_KEY=your_key");
-  }
-  const url = new URL(`${BASE_URL}${path}`);
-  url.searchParams.set("api_key", API_KEY);
-  for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
-  const res = await fetch(url.toString());
-  if (!res.ok) throw new Error(`TMDB request failed: ${res.status}`);
-  return res.json() as Promise<T>;
+// TMDB is called from the server, so the API key never reaches the browser.
+// Only these three calls are accepted, so the endpoint can't be used as an open proxy.
+const callTmdb = createServerFn({ method: "GET" })
+  .validator((input: unknown): TmdbCall => {
+    const call = (input ?? {}) as { kind?: unknown; query?: unknown; id?: unknown };
+    if (call.kind === "trending") return { kind: "trending" };
+    if (call.kind === "search" && typeof call.query === "string") {
+      const query = call.query.trim();
+      if (query && query.length <= 200) return { kind: "search", query };
+    }
+    if (call.kind === "detail" && /^\d{1,10}$/.test(String(call.id ?? ""))) {
+      return { kind: "detail", id: String(call.id) };
+    }
+    throw new Error("Unsupported TMDB request");
+  })
+  .handler(async ({ data }): Promise<string | null> => {
+    const key = process.env.TMDB_API_KEY ?? process.env.VITE_TMDB_API_KEY;
+    if (!key) return null;
+    const path =
+      data.kind === "trending"
+        ? "/trending/movie/week"
+        : data.kind === "search"
+          ? "/search/movie"
+          : `/movie/${data.id}`;
+    const url = new URL(`${BASE_URL}${path}`);
+    url.searchParams.set("api_key", key);
+    if (data.kind === "search") {
+      url.searchParams.set("query", data.query);
+      url.searchParams.set("include_adult", "false");
+    }
+    if (data.kind === "detail") url.searchParams.set("append_to_response", "credits,videos");
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`TMDB request failed: ${res.status}`);
+    return res.text();
+  });
+
+// Whether the last answer came from TMDB (true) or the server has no key (false)
+let live: boolean | null = null;
+export const isLive = () => live !== false;
+
+async function fromTmdb<T>(call: TmdbCall): Promise<T | null> {
+  const text = await callTmdb({ data: call });
+  live = text !== null;
+  return text === null ? null : (JSON.parse(text) as T);
 }
 
-// Without an API key the app runs on the curated offline catalog
-export const getTrending = async () =>
-  API_KEY
-    ? tmdb<{ results: Movie[] }>("/trending/movie/week").then((d) => d.results)
-    : catalogTrending();
+// Without an API key on the server the app runs on the curated offline catalog
+export const getTrending = async (): Promise<Movie[]> =>
+  (await fromTmdb<{ results: Movie[] }>({ kind: "trending" }))?.results ?? catalogTrending();
 
-export const getPopular = () => tmdb<{ results: Movie[] }>("/movie/popular").then((d) => d.results);
+export const searchMovies = async (query: string): Promise<Movie[]> =>
+  (await fromTmdb<{ results: Movie[] }>({ kind: "search", query }))?.results ??
+  searchCatalog(query);
 
-export const searchMovies = async (query: string) =>
-  API_KEY
-    ? tmdb<{ results: Movie[] }>("/search/movie", { query, include_adult: "false" }).then(
-        (d) => d.results,
-      )
-    : searchCatalog(query);
-
-export const getMovieDetails = async (id: string | number) =>
-  API_KEY
-    ? tmdb<MovieDetail>(`/movie/${id}`, { append_to_response: "credits,videos" })
-    : catalogDetail(id);
+export const getMovieDetails = async (id: string | number): Promise<MovieDetail> =>
+  (await fromTmdb<MovieDetail>({ kind: "detail", id: String(id) })) ?? catalogDetail(id);
 
 export const posterUrl = (
   path: string | null,

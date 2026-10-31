@@ -10,7 +10,7 @@ import { PosterWall } from "@/components/PosterWall";
 import { PRESETS } from "@/lib/colorSearch";
 import { useScrollProgress } from "@/hooks/useMotion";
 import { catalog } from "@/services/catalog";
-import { getTrending, hasApiKey } from "@/services/tmdb";
+import { getTrending, isLive } from "@/services/tmdb";
 
 export const Route = createFileRoute("/")({
   component: HomePage,
@@ -92,7 +92,7 @@ function HomePage() {
           <div>
             <h2 className="font-display text-3xl tracking-wide">Trending this week</h2>
             <p className="text-sm text-muted-foreground">
-              {hasApiKey()
+              {isLive()
                 ? "The films everyone is talking about."
                 : "From the curated catalog: live TMDB data appears when an API key is set."}
             </p>

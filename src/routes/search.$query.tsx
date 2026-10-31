@@ -28,7 +28,7 @@ function SearchPage() {
 
   const results = useMemo(() => {
     if (!data) return [];
-    let out = [...data].filter((m) => (m.vote_average ?? 0) >= minRating);
+    const out = [...data].filter((m) => (m.vote_average ?? 0) >= minRating);
     switch (sort) {
       case "rating":
         out.sort((a, b) => b.vote_average - a.vote_average);

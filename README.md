@@ -47,7 +47,7 @@ npm install
 npm run dev    # http://localhost:8080
 ```
 
-Without an API key the app runs on the curated catalog in `src/data/catalog.json` (85 films). For live TMDB data, get a free key at [themoviedb.org](https://www.themoviedb.org/settings/api) and add it to `.env` as `VITE_TMDB_API_KEY`.
+Without an API key the app runs on the curated catalog in `src/data/catalog.json` (85 films). For live TMDB data, get a free key at [themoviedb.org](https://www.themoviedb.org/settings/api) and add it to `.env` as `TMDB_API_KEY`. The key is only read on the server: the browser asks the app's own server function, which calls TMDB, so the key never appears in the page's JavaScript.
 
 Rebuild the color catalog:
 
