@@ -1,10 +1,15 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Flame } from "lucide-react";
+import { useRef } from "react";
+import { ArrowRight, Flame, Palette } from "lucide-react";
 import { SearchBar } from "@/components/SearchBar";
 import { MovieGrid } from "@/components/MovieGrid";
 import { LoadingSkeleton } from "@/components/LoadingSkeleton";
 import { ErrorMessage } from "@/components/ErrorMessage";
+import { PosterWall } from "@/components/PosterWall";
+import { PRESETS } from "@/lib/colorSearch";
+import { useScrollProgress } from "@/hooks/useMotion";
+import { catalog } from "@/services/catalog";
 import { getTrending, hasApiKey } from "@/services/tmdb";
 
 export const Route = createFileRoute("/")({
@@ -12,67 +17,79 @@ export const Route = createFileRoute("/")({
 });
 
 function HomePage() {
-  const enabled = hasApiKey();
+  const hero = useRef<HTMLElement>(null);
+  useScrollProgress(hero);
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["trending"],
     queryFn: getTrending,
-    enabled,
   });
 
   return (
     <div>
-      <section className="hero-bg relative -mx-4 overflow-hidden rounded-none px-4 py-16 sm:-mx-6 sm:rounded-3xl sm:px-10 sm:py-24 lg:mx-0">
-        <div className="mx-auto max-w-3xl text-center">
-          <p className="text-sm uppercase tracking-[0.3em] text-primary">CineScope</p>
-          <h1 className="mt-4 font-display text-5xl leading-none tracking-wide sm:text-7xl">
-            Discover Your Next
-            <br />
-            <span className="text-primary">Favorite Film</span>
-          </h1>
-          <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
-            Search thousands of movies, dive into details, and build your own
-            watchlist — all in one cinematic place.
+      <section
+        ref={hero}
+        className="hero relative -mx-4 -mt-8 flex min-h-[86vh] items-center overflow-hidden px-4 sm:-mx-6 sm:px-10"
+      >
+        <PosterWall posters={catalog.map((film) => film.poster_path)} />
+        <div className="hero__shade" />
+        <div className="hero__content relative mx-auto max-w-3xl text-center">
+          <p className="hero-rise text-sm uppercase tracking-[0.35em] text-spectrum" style={{ "--d": 0 } as React.CSSProperties}>
+            CineScope
           </p>
-          <div className="mt-8">
-            <SearchBar large autoNavigate={false} />
+          <h1 className="hero-rise mt-5 font-display text-6xl leading-[0.92] tracking-wide sm:text-8xl" style={{ "--d": 1 } as React.CSSProperties}>
+            Find films by
+            <br />
+            <span className="text-spectrum">their colors</span>
+          </h1>
+          <p className="hero-rise mx-auto mt-6 max-w-xl text-lg text-muted-foreground" style={{ "--d": 2 } as React.CSSProperties}>
+            Pick a color and get the movies that look like it, or search any title the usual way.
+          </p>
+          <div className="hero-rise mt-8 flex flex-col items-center gap-4" style={{ "--d": 3 } as React.CSSProperties}>
+            <Link to="/colors" className="spectrum-button">
+              <Palette className="h-5 w-5" /> Search by color <ArrowRight className="h-4 w-4" />
+            </Link>
+            <div className="w-full max-w-xl">
+              <SearchBar large autoNavigate={false} />
+            </div>
           </div>
         </div>
       </section>
 
-      <section className="mt-12">
-        <div className="mb-6 flex items-center gap-3">
+      <section className="reveal mt-16">
+        <h2 className="mb-5 font-display text-3xl tracking-wide">Browse by look</h2>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+          {PRESETS.map((preset) => (
+            <Link
+              key={preset.id}
+              to="/colors"
+              search={{ preset: preset.id }}
+              className="look-tile"
+              style={{ "--a": preset.colors[0], "--b": preset.colors[1] } as React.CSSProperties}
+            >
+              <span>{preset.name}</span>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      <section className="mt-16">
+        <div className="reveal mb-6 flex items-center gap-3">
           <div className="grid h-9 w-9 place-items-center rounded-lg bg-primary/15 text-primary">
             <Flame className="h-5 w-5" />
           </div>
           <div>
-            <h2 className="font-display text-2xl tracking-wide">Trending This Week</h2>
+            <h2 className="font-display text-3xl tracking-wide">Trending this week</h2>
             <p className="text-sm text-muted-foreground">
-              The films everyone is talking about.
+              {hasApiKey()
+                ? "The films everyone is talking about."
+                : "From the curated catalog: live TMDB data appears when an API key is set."}
             </p>
           </div>
         </div>
 
-        {!enabled && (
-          <div className="rounded-2xl border border-dashed border-primary/40 bg-primary/5 p-8 text-center">
-            <h3 className="text-lg font-semibold">Add your TMDB API key</h3>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Create a <code className="rounded bg-muted px-1">.env</code> file in the
-              project root with:
-            </p>
-            <pre className="mt-3 inline-block rounded-lg bg-card px-4 py-2 text-sm">
-              VITE_TMDB_API_KEY=your_api_key_here
-            </pre>
-            <p className="mt-3 text-xs text-muted-foreground">
-              Get a free key at themoviedb.org, then restart the dev server.
-            </p>
-          </div>
-        )}
-
-        {enabled && isLoading && <LoadingSkeleton />}
-        {enabled && error && (
-          <ErrorMessage message={(error as Error).message} onRetry={() => refetch()} />
-        )}
-        {enabled && data && <MovieGrid movies={data} />}
+        {isLoading && <LoadingSkeleton />}
+        {error && <ErrorMessage message={(error as Error).message} onRetry={() => refetch()} />}
+        {data && <MovieGrid movies={data} />}
       </section>
     </div>
   );

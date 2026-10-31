@@ -38,3 +38,22 @@ export interface FavoriteMovie {
   release_date: string;
   vote_average: number;
 }
+
+/** One dominant color of a film still, with the share of the frame it covers. */
+export interface Swatch {
+  hex: string;
+  weight: number;
+  lab: [number, number, number];
+}
+
+/** A film in the prebuilt color catalog (src/data/catalog.json). */
+export interface CatalogFilm extends Movie {
+  tagline: string | null;
+  runtime: number | null;
+  genres: { id: number; name: string }[];
+  cast: CastMember[];
+  trailer_key: string | null;
+  trending: boolean;
+  palette: Swatch[];
+  strip: string[];
+}

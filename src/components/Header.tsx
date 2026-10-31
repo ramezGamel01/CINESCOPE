@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Film, Heart, Home, Search } from "lucide-react";
+import { Film, Heart, Home, Palette, Search } from "lucide-react";
 import { useState } from "react";
 
 export function Header() {
@@ -15,7 +15,7 @@ export function Header() {
     setOpen(false);
   };
 
-  const navLink = (to: "/" | "/favorites", label: string, Icon: typeof Home) => (
+  const navLink = (to: "/" | "/colors" | "/favorites", label: string, Icon: typeof Home) => (
     <Link
       to={to}
       activeOptions={{ exact: to === "/" }}
@@ -33,11 +33,11 @@ export function Header() {
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-xl">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
         <Link to="/" className="flex items-center gap-2 group">
-          <div className="grid h-9 w-9 place-items-center rounded-lg bg-primary text-primary-foreground shadow-glow transition-transform group-hover:scale-105">
+          <div className="logo-mark grid h-9 w-9 place-items-center rounded-lg text-white transition-transform group-hover:scale-105">
             <Film className="h-5 w-5" />
           </div>
           <span className="font-display text-2xl tracking-wider">
-            CINE<span className="text-primary">SCOPE</span>
+            CINE<span className="text-spectrum">SCOPE</span>
           </span>
         </Link>
 
@@ -55,6 +55,7 @@ export function Header() {
 
         <nav className="hidden items-center gap-6 md:flex">
           {navLink("/", "Home", Home)}
+          {navLink("/colors", "Colors", Palette)}
           {navLink("/favorites", "Favorites", Heart)}
         </nav>
 
@@ -87,6 +88,7 @@ export function Header() {
             </form>
             <div className="flex gap-6">
               {navLink("/", "Home", Home)}
+              {navLink("/colors", "Colors", Palette)}
               {navLink("/favorites", "Favorites", Heart)}
             </div>
           </div>

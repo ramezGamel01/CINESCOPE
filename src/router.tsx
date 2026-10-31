@@ -9,6 +9,8 @@ export const getRouter = () => {
     routeTree,
     context: { queryClient },
     scrollRestoration: true,
+    // Smooth cross-fades between pages; posters morph into the movie page
+    defaultViewTransition: true,
     defaultPreloadStaleTime: 0,
   });
 

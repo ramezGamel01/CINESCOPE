@@ -7,6 +7,7 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
+import { motionBootScript } from "@/hooks/useMotion";
 
 import appCss from "../styles.css?url";
 import { Header } from "@/components/Header";
@@ -92,6 +93,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         href: "https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap",
       },
     ],
+    scripts: [{ children: motionBootScript }],
   }),
   shellComponent: RootShell,
   component: RootComponent,

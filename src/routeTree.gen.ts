@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as FavoritesRouteImport } from './routes/favorites'
+import { Route as ColorsRouteImport } from './routes/colors'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SearchQueryRouteImport } from './routes/search.$query'
 import { Route as MovieIdRouteImport } from './routes/movie.$id'
@@ -17,6 +18,11 @@ import { Route as MovieIdRouteImport } from './routes/movie.$id'
 const FavoritesRoute = FavoritesRouteImport.update({
   id: '/favorites',
   path: '/favorites',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ColorsRoute = ColorsRouteImport.update({
+  id: '/colors',
+  path: '/colors',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -37,12 +43,14 @@ const MovieIdRoute = MovieIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/colors': typeof ColorsRoute
   '/favorites': typeof FavoritesRoute
   '/movie/$id': typeof MovieIdRoute
   '/search/$query': typeof SearchQueryRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/colors': typeof ColorsRoute
   '/favorites': typeof FavoritesRoute
   '/movie/$id': typeof MovieIdRoute
   '/search/$query': typeof SearchQueryRoute
@@ -50,20 +58,28 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/colors': typeof ColorsRoute
   '/favorites': typeof FavoritesRoute
   '/movie/$id': typeof MovieIdRoute
   '/search/$query': typeof SearchQueryRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/favorites' | '/movie/$id' | '/search/$query'
+  fullPaths: '/' | '/colors' | '/favorites' | '/movie/$id' | '/search/$query'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/favorites' | '/movie/$id' | '/search/$query'
-  id: '__root__' | '/' | '/favorites' | '/movie/$id' | '/search/$query'
+  to: '/' | '/colors' | '/favorites' | '/movie/$id' | '/search/$query'
+  id:
+    | '__root__'
+    | '/'
+    | '/colors'
+    | '/favorites'
+    | '/movie/$id'
+    | '/search/$query'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ColorsRoute: typeof ColorsRoute
   FavoritesRoute: typeof FavoritesRoute
   MovieIdRoute: typeof MovieIdRoute
   SearchQueryRoute: typeof SearchQueryRoute
@@ -76,6 +92,13 @@ declare module '@tanstack/react-router' {
       path: '/favorites'
       fullPath: '/favorites'
       preLoaderRoute: typeof FavoritesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/colors': {
+      id: '/colors'
+      path: '/colors'
+      fullPath: '/colors'
+      preLoaderRoute: typeof ColorsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -104,6 +127,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ColorsRoute: ColorsRoute,
   FavoritesRoute: FavoritesRoute,
   MovieIdRoute: MovieIdRoute,
   SearchQueryRoute: SearchQueryRoute,

@@ -1,3 +1,4 @@
+import { catalogDetail, catalogTrending, searchCatalog } from "@/services/catalog";
 import type { Movie, MovieDetail } from "@/types/movie";
 
 const API_KEY = import.meta.env.VITE_TMDB_API_KEY as string | undefined;
@@ -20,24 +21,36 @@ async function tmdb<T>(path: string, params: Record<string, string> = {}): Promi
   return res.json() as Promise<T>;
 }
 
-export const getTrending = () =>
-  tmdb<{ results: Movie[] }>("/trending/movie/week").then((d) => d.results);
+// Without an API key the app runs on the curated offline catalog
+export const getTrending = async () =>
+  API_KEY
+    ? tmdb<{ results: Movie[] }>("/trending/movie/week").then((d) => d.results)
+    : catalogTrending();
 
 export const getPopular = () =>
   tmdb<{ results: Movie[] }>("/movie/popular").then((d) => d.results);
 
-export const searchMovies = (query: string) =>
-  tmdb<{ results: Movie[] }>("/search/movie", { query, include_adult: "false" }).then(
-    (d) => d.results,
-  );
+export const searchMovies = async (query: string) =>
+  API_KEY
+    ? tmdb<{ results: Movie[] }>("/search/movie", { query, include_adult: "false" }).then(
+        (d) => d.results,
+      )
+    : searchCatalog(query);
 
-export const getMovieDetails = (id: string | number) =>
-  tmdb<MovieDetail>(`/movie/${id}`, { append_to_response: "credits,videos" });
+export const getMovieDetails = async (id: string | number) =>
+  API_KEY
+    ? tmdb<MovieDetail>(`/movie/${id}`, { append_to_response: "credits,videos" })
+    : catalogDetail(id);
 
-export const posterUrl = (path: string | null, size: "w342" | "w500" | "original" = "w500") =>
+export const posterUrl = (
+  path: string | null,
+  size: "w185" | "w342" | "w500" | "original" = "w500",
+) =>
   path
     ? `${IMG_BASE}/${size}${path}`
     : `https://placehold.co/500x750/1a1a2e/f5a623?text=No+Poster`;
 
-export const backdropUrl = (path: string | null) =>
-  path ? `${IMG_BASE}/original${path}` : null;
+export const backdropUrl = (
+  path: string | null,
+  size: "w300" | "w780" | "w1280" | "original" = "w1280",
+) => (path ? `${IMG_BASE}/${size}${path}` : null);

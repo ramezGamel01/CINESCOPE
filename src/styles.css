@@ -41,25 +41,25 @@
 
 :root {
   --radius: 0.75rem;
-  --background: oklch(0.08 0.015 260);
+  --background: oklch(0.1 0.012 275);
   --foreground: oklch(0.97 0.005 260);
-  --card: oklch(0.14 0.02 260);
+  --card: oklch(0.155 0.016 275);
   --card-foreground: oklch(0.97 0.005 260);
   --popover: oklch(0.14 0.02 260);
   --popover-foreground: oklch(0.97 0.005 260);
-  --primary: oklch(0.72 0.19 45);
+  --primary: oklch(0.78 0.16 62);
   --primary-foreground: oklch(0.12 0.02 260);
   --secondary: oklch(0.22 0.03 260);
   --secondary-foreground: oklch(0.97 0.005 260);
-  --muted: oklch(0.18 0.02 260);
-  --muted-foreground: oklch(0.68 0.02 260);
+  --muted: oklch(0.19 0.016 275);
+  --muted-foreground: oklch(0.72 0.015 275);
   --accent: oklch(0.28 0.05 20);
   --accent-foreground: oklch(0.97 0.005 260);
   --destructive: oklch(0.6 0.24 25);
   --destructive-foreground: oklch(0.97 0.005 260);
-  --border: oklch(0.24 0.02 260);
+  --border: oklch(0.27 0.016 275);
   --input: oklch(0.2 0.02 260);
-  --ring: oklch(0.72 0.19 45);
+  --ring: oklch(0.78 0.16 62);
   --gold: oklch(0.85 0.16 90);
 }
 
@@ -82,4 +82,361 @@
 
 @utility card-bg {
   background: var(--gradient-card);
+}
+
+/* =========================================================
+   Color identity: a spectrum accent for search by color,
+   film grain, 3D scroll and motion. Motion stops when the
+   visitor prefers reduced motion.
+   ========================================================= */
+
+:root {
+  --spectrum: linear-gradient(90deg, #ff5e7e, #ffb547, #f2e46b, #63e2a6, #4cc4ff, #9b7bff, #ff5e7e);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  opacity: 0.07;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.text-spectrum {
+  background: var(--spectrum);
+  background-size: 200% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  animation: spectrum-shift 12s linear infinite;
+}
+@keyframes spectrum-shift {
+  to {
+    background-position: 200% 0;
+  }
+}
+
+.logo-mark {
+  background: conic-gradient(from 200deg, #ff5e7e, #ffb547, #f2e46b, #63e2a6, #4cc4ff, #9b7bff, #ff5e7e);
+  box-shadow: 0 6px 24px -6px rgb(255 160 90 / 0.55);
+}
+
+/* ---------- Home hero: a 3D wall of posters ---------- */
+.hero {
+  --scroll: 0;
+}
+.poster-wall {
+  position: absolute;
+  inset: 0;
+  perspective: 1400px;
+  perspective-origin: 50% 30%;
+}
+.poster-wall__plane {
+  position: absolute;
+  left: -24%;
+  top: -50%;
+  width: 178%;
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 18px;
+  opacity: calc(0.62 - var(--scroll) * 0.3);
+  transform-style: preserve-3d;
+  transform: rotateX(calc(46deg - var(--scroll) * 24deg)) rotateZ(-11deg)
+    translateY(calc(var(--scroll) * -16%)) scale(calc(1 + var(--scroll) * 0.18));
+  will-change: transform;
+}
+.poster-wall__column {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  animation: wall-drift linear infinite;
+}
+.poster-wall__column.is-down {
+  animation-direction: reverse;
+  margin-top: -40%;
+}
+.poster-wall__column img {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  border-radius: 12px;
+  box-shadow: 0 30px 50px -20px rgb(0 0 0 / 0.8);
+}
+@keyframes wall-drift {
+  to {
+    transform: translateY(-50%);
+  }
+}
+.hero__shade {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 55% at 50% 48%, oklch(0.1 0.012 275 / 0.92), oklch(0.1 0.012 275 / 0.55) 60%, transparent),
+    linear-gradient(180deg, oklch(0.1 0.012 275 / 0.6), transparent 30%, transparent 70%, var(--background));
+}
+.hero__content {
+  transform: translateY(calc(var(--scroll) * 60px));
+  opacity: calc(1 - var(--scroll) * 1.4);
+}
+
+.hero-rise {
+  animation: rise 1s var(--ease-out) both;
+  animation-delay: calc(var(--d, 0) * 110ms + 150ms);
+}
+@keyframes rise {
+  from {
+    opacity: 0;
+    translate: 0 28px;
+    filter: blur(6px);
+  }
+}
+
+.spectrum-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.95rem 1.6rem;
+  border-radius: 999px;
+  font-weight: 600;
+  color: white;
+  border: 2px solid transparent;
+  background:
+    linear-gradient(var(--background), var(--background)) padding-box,
+    var(--spectrum) border-box;
+  box-shadow: 0 10px 40px -10px rgb(255 120 140 / 0.45), 0 10px 40px -14px rgb(80 180 255 / 0.5);
+  transition: transform 0.3s var(--ease-out), box-shadow 0.3s;
+}
+.spectrum-button:hover {
+  transform: translateY(-2px) scale(1.03);
+}
+
+.look-tile {
+  display: flex;
+  aspect-ratio: 4 / 3;
+  align-items: flex-end;
+  padding: 0.9rem 1rem;
+  border-radius: 1.1rem;
+  font-weight: 600;
+  color: white;
+  text-shadow: 0 1px 8px rgb(0 0 0 / 0.5);
+  background:
+    radial-gradient(circle at 25% 25%, var(--a), transparent 70%),
+    radial-gradient(circle at 80% 85%, var(--b), transparent 75%),
+    linear-gradient(135deg, var(--a), var(--b));
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.08);
+  transition: transform 0.4s var(--ease-out), box-shadow 0.4s;
+}
+.look-tile:hover {
+  transform: perspective(700px) rotateX(10deg) translateY(-6px);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.2), 0 24px 40px -18px var(--a);
+}
+
+/* ---------- Cards: 3D tilt toward the cursor ---------- */
+.tilt {
+  --rx: 0deg;
+  --ry: 0deg;
+  position: relative;
+  transform-style: preserve-3d;
+  transform: perspective(800px) rotateX(var(--rx)) rotateY(var(--ry));
+  transition: transform 0.4s var(--ease-out);
+}
+.tilt:hover {
+  transition-duration: 0.12s;
+}
+.tilt-glare {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(circle at var(--gx, 50%) var(--gy, 0%), rgb(255 255 255 / 0.28), transparent 55%);
+  mix-blend-mode: overlay;
+  transition: opacity 0.3s;
+}
+.tilt:hover .tilt-glare {
+  opacity: 1;
+}
+.movie-card .shadow-poster {
+  transition: box-shadow 0.4s;
+}
+.movie-card:hover .shadow-poster {
+  box-shadow: 0 30px 50px -18px rgb(0 0 0 / 0.85), 0 0 0 1px rgb(255 255 255 / 0.08);
+}
+
+/* ---------- Scroll-driven 3D reveals ---------- */
+.movie-grid {
+  perspective: 1400px;
+}
+@supports (animation-timeline: view()) {
+  .reveal {
+    animation: reveal linear both;
+    animation-timeline: view();
+    animation-range: entry 0% cover 28%;
+  }
+  .movie-card {
+    animation: card-in linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 90%;
+  }
+}
+@keyframes reveal {
+  from {
+    opacity: 0;
+    translate: 0 50px;
+    rotate: x 16deg;
+  }
+}
+@keyframes card-in {
+  from {
+    opacity: 0;
+    translate: 0 70px;
+    rotate: x 32deg;
+    scale: 0.9;
+  }
+}
+
+.match-card,
+.cast-card {
+  animation: match-in 0.6s var(--ease-out) both;
+  animation-delay: calc(var(--i, 0) * 45ms);
+}
+@keyframes match-in {
+  from {
+    opacity: 0;
+    translate: 0 24px;
+    scale: 0.96;
+  }
+}
+
+/* ---------- Search by color ---------- */
+.glass-panel {
+  border: 1px solid var(--border);
+  background: color-mix(in oklch, var(--card) 70%, transparent);
+  backdrop-filter: blur(16px);
+}
+.color-wheel {
+  border-radius: 50%;
+  box-shadow: 0 0 0 6px rgb(255 255 255 / 0.04), 0 30px 60px -20px rgb(0 0 0 / 0.8);
+}
+.lightness-slider {
+  appearance: none;
+  height: 10px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #1b1b1f, #8a8a8f, #f2f2f2);
+}
+.lightness-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: white;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.5);
+}
+.lightness-slider::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border: 0;
+  border-radius: 50%;
+  background: white;
+}
+.preset-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.4rem 0.8rem 0.4rem 0.45rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 0.8rem;
+  transition: border-color 0.2s, background 0.2s;
+}
+.preset-chip:hover,
+.preset-chip.is-active {
+  border-color: color-mix(in oklch, var(--a) 70%, white);
+  background: color-mix(in oklch, var(--a) 18%, transparent);
+}
+.preset-chip__dots {
+  width: 1.3rem;
+  height: 1.3rem;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--a) 50%, var(--b) 50%);
+}
+.spectrum-grid {
+  display: grid;
+  gap: 0.25rem;
+  max-width: 60rem;
+  margin: 0 auto;
+}
+.palette-swatch {
+  transition: flex-grow 0.5s var(--ease-out);
+}
+
+/* ---------- Movie page: tinted by the film's own colors ---------- */
+.film-page {
+  --film: var(--primary);
+  --film-ink: var(--primary-foreground);
+}
+.film-hero {
+  --scroll: 0;
+}
+.film-hero__image {
+  transform: translateY(calc(var(--scroll) * 28%)) scale(calc(1.06 + var(--scroll) * 0.08));
+  will-change: transform;
+}
+.film-poster {
+  animation: float 7s ease-in-out infinite;
+}
+.film-poster img {
+  box-shadow: 0 40px 70px -25px color-mix(in oklch, var(--film) 55%, black);
+}
+@keyframes float {
+  50% {
+    translate: 0 -8px;
+  }
+}
+.film-chip {
+  border-color: color-mix(in oklch, var(--film) 45%, transparent);
+  background: color-mix(in oklch, var(--film) 12%, transparent);
+}
+.film-button {
+  color: var(--film-ink);
+  background: var(--film);
+  box-shadow: 0 10px 30px -10px var(--film);
+  transition: transform 0.3s var(--ease-out);
+}
+.film-button:hover {
+  transform: translateY(-2px);
+}
+.film-link {
+  color: var(--film);
+}
+
+/* ---------- Page transitions ---------- */
+::view-transition-group(*) {
+  animation-duration: 0.5s;
+  animation-timing-function: var(--ease-out);
+}
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.3s;
+}
+
+/* Motion off (system setting or the footer toggle): no movement, 3D look stays */
+:root[data-motion="off"] *,
+:root[data-motion="off"] *::before,
+:root[data-motion="off"] *::after {
+  animation: none !important;
+  transition: none !important;
+}
+:root[data-motion="off"] .hero__content,
+:root[data-motion="off"] .film-hero__image,
+:root[data-motion="off"] .tilt {
+  transform: none;
+}
+:root[data-motion="off"]::view-transition-group(*),
+:root[data-motion="off"]::view-transition-old(*),
+:root[data-motion="off"]::view-transition-new(*) {
+  animation: none !important;
 }
