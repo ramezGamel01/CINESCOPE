@@ -1,5 +1,7 @@
 # CineScope
 
+[![CI](https://github.com/ramezGamel01/CINESCOPE/actions/workflows/ci.yml/badge.svg)](https://github.com/ramezGamel01/CINESCOPE/actions/workflows/ci.yml)
+
 A movie discovery app: browse this week's trending films, search any title, open a movie for its cast and trailer, and keep a list of favorites.
 
 **Live:** https://cinescope-gamma-ruby.vercel.app
