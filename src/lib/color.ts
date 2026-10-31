@@ -6,11 +6,9 @@
 
 export type Lab = [number, number, number];
 
-const srgbToLinear = (c: number) =>
-  c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+const srgbToLinear = (c: number) => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
 
-const linearToSrgb = (c: number) =>
-  c <= 0.0031308 ? 12.92 * c : 1.055 * c ** (1 / 2.4) - 0.055;
+const linearToSrgb = (c: number) => (c <= 0.0031308 ? 12.92 * c : 1.055 * c ** (1 / 2.4) - 0.055);
 
 export function rgbToOklab(r: number, g: number, b: number): Lab {
   const lr = srgbToLinear(r);
@@ -52,7 +50,13 @@ export function hexToOklab(hex: string): Lab {
 
 export function oklabToHex(lab: Lab): string {
   const { rgb } = oklabToRgb(lab);
-  return `#${rgb.map((c) => Math.round(c * 255).toString(16).padStart(2, "0")).join("")}`;
+  return `#${rgb
+    .map((c) =>
+      Math.round(c * 255)
+        .toString(16)
+        .padStart(2, "0"),
+    )
+    .join("")}`;
 }
 
 /** Lightness 0..1, chroma 0..~0.37, hue in degrees -> OKLab. */

@@ -1,5 +1,5 @@
 import data from "@/data/catalog.json";
-import type { CatalogFilm, Movie, MovieDetail } from "@/types/movie";
+import type { CatalogFilm, FilmStyle, Movie, MovieDetail } from "@/types/movie";
 
 /**
  * The curated catalog: real TMDB metadata plus color palettes built by
@@ -7,6 +7,9 @@ import type { CatalogFilm, Movie, MovieDetail } from "@/types/movie";
  * without an API key.
  */
 export const catalog = data.films as unknown as CatalogFilm[];
+
+/** Visual styles the clustering step found, largest first. */
+export const styles = ((data as { styles?: FilmStyle[] }).styles ?? []) as FilmStyle[];
 
 const byId = new Map(catalog.map((film) => [film.id, film]));
 
@@ -31,7 +34,15 @@ export function catalogDetail(id: number | string): MovieDetail {
     credits: { cast: film.cast },
     videos: {
       results: film.trailer_key
-        ? [{ id: film.trailer_key, key: film.trailer_key, site: "YouTube", type: "Trailer", name: "Trailer" }]
+        ? [
+            {
+              id: film.trailer_key,
+              key: film.trailer_key,
+              site: "YouTube",
+              type: "Trailer",
+              name: "Trailer",
+            },
+          ]
         : [],
     },
   };

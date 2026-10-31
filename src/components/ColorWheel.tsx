@@ -16,7 +16,13 @@ export const wheelToLab = (v: WheelValue): Lab => oklch(v.lightness, v.chroma, v
  * A perceptual color wheel: hue around the circle, colorfulness from the
  * center out, lightness on the slider. Drawn in OKLCH so equal steps look equal.
  */
-export function ColorWheel({ value, onChange }: { value: WheelValue; onChange: (v: WheelValue) => void }) {
+export function ColorWheel({
+  value,
+  onChange,
+}: {
+  value: WheelValue;
+  onChange: (v: WheelValue) => void;
+}) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -48,7 +54,11 @@ export function ColorWheel({ value, onChange }: { value: WheelValue; onChange: (
     const dx = event.clientX - rect.left - rect.width / 2;
     const dy = event.clientY - rect.top - rect.height / 2;
     const d = Math.min(1, Math.hypot(dx, dy) / (rect.width / 2));
-    onChange({ ...value, hue: ((Math.atan2(dy, dx) * 180) / Math.PI + 360) % 360, chroma: d * MAX_CHROMA });
+    onChange({
+      ...value,
+      hue: ((Math.atan2(dy, dx) * 180) / Math.PI + 360) % 360,
+      chroma: d * MAX_CHROMA,
+    });
   };
 
   const angle = (value.hue * Math.PI) / 180;

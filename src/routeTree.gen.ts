@@ -9,12 +9,18 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as UniverseRouteImport } from './routes/universe'
 import { Route as FavoritesRouteImport } from './routes/favorites'
 import { Route as ColorsRouteImport } from './routes/colors'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SearchQueryRouteImport } from './routes/search.$query'
 import { Route as MovieIdRouteImport } from './routes/movie.$id'
 
+const UniverseRoute = UniverseRouteImport.update({
+  id: '/universe',
+  path: '/universe',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const FavoritesRoute = FavoritesRouteImport.update({
   id: '/favorites',
   path: '/favorites',
@@ -45,6 +51,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/colors': typeof ColorsRoute
   '/favorites': typeof FavoritesRoute
+  '/universe': typeof UniverseRoute
   '/movie/$id': typeof MovieIdRoute
   '/search/$query': typeof SearchQueryRoute
 }
@@ -52,6 +59,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/colors': typeof ColorsRoute
   '/favorites': typeof FavoritesRoute
+  '/universe': typeof UniverseRoute
   '/movie/$id': typeof MovieIdRoute
   '/search/$query': typeof SearchQueryRoute
 }
@@ -60,19 +68,33 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/colors': typeof ColorsRoute
   '/favorites': typeof FavoritesRoute
+  '/universe': typeof UniverseRoute
   '/movie/$id': typeof MovieIdRoute
   '/search/$query': typeof SearchQueryRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/colors' | '/favorites' | '/movie/$id' | '/search/$query'
+  fullPaths:
+    | '/'
+    | '/colors'
+    | '/favorites'
+    | '/universe'
+    | '/movie/$id'
+    | '/search/$query'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/colors' | '/favorites' | '/movie/$id' | '/search/$query'
+  to:
+    | '/'
+    | '/colors'
+    | '/favorites'
+    | '/universe'
+    | '/movie/$id'
+    | '/search/$query'
   id:
     | '__root__'
     | '/'
     | '/colors'
     | '/favorites'
+    | '/universe'
     | '/movie/$id'
     | '/search/$query'
   fileRoutesById: FileRoutesById
@@ -81,12 +103,20 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ColorsRoute: typeof ColorsRoute
   FavoritesRoute: typeof FavoritesRoute
+  UniverseRoute: typeof UniverseRoute
   MovieIdRoute: typeof MovieIdRoute
   SearchQueryRoute: typeof SearchQueryRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/universe': {
+      id: '/universe'
+      path: '/universe'
+      fullPath: '/universe'
+      preLoaderRoute: typeof UniverseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/favorites': {
       id: '/favorites'
       path: '/favorites'
@@ -129,6 +159,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ColorsRoute: ColorsRoute,
   FavoritesRoute: FavoritesRoute,
+  UniverseRoute: UniverseRoute,
   MovieIdRoute: MovieIdRoute,
   SearchQueryRoute: SearchQueryRoute,
 }

@@ -21,7 +21,10 @@ export function Footer() {
         </button>
         <p>
           Data and images from{" "}
-          <a href="https://www.themoviedb.org" className="underline underline-offset-2 hover:text-foreground">
+          <a
+            href="https://www.themoviedb.org"
+            className="underline underline-offset-2 hover:text-foreground"
+          >
             TMDB
           </a>
           . Not endorsed by TMDB.

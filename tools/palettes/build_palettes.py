@@ -151,6 +151,99 @@ def palette_for(image: Image.Image, seed: int) -> tuple[list[dict], list[str]]:
     return palette, strip
 
 
+# --- Visual styles: unsupervised clustering of palettes -------------------------
+
+# Hue bands in OKLCH degrees, named by the color people would call them
+HUES = [(0, "red"), (40, "orange"), (80, "gold"), (120, "green"), (165, "teal"),
+        (215, "blue"), (285, "violet"), (330, "pink")]
+NEUTRAL_CHROMA = 0.04
+
+
+def hue_band(a: float, b: float) -> int:
+    hue = np.degrees(np.arctan2(b, a)) % 360
+    return max(i for i, (start, _) in enumerate(HUES) if hue >= start)
+
+
+def fingerprint(palette: list[dict]) -> np.ndarray:
+    """Share of the frame in each (hue band x dark/light) bin, plus 3 grey bins."""
+    bins = np.zeros(len(HUES) * 2 + 3)
+    for swatch in palette:
+        L, a, b = swatch["lab"]
+        if np.hypot(a, b) < NEUTRAL_CHROMA:
+            bins[len(HUES) * 2 + min(2, int(L * 3))] += swatch["weight"]
+        else:
+            bins[hue_band(a, b) * 2 + (L >= 0.55)] += swatch["weight"]
+    return np.sqrt(bins / bins.sum())  # Hellinger: euclidean k-means on sqrt shares
+
+
+def style_name(members: list[dict]) -> str:
+    swatches = [s for film in members for s in film["palette"]]
+    weights = np.array([s["weight"] for s in swatches])
+    labs = np.array([s["lab"] for s in swatches])
+    lightness = float(np.average(labs[:, 0], weights=weights))
+    chroma = float(np.average(np.hypot(labs[:, 1], labs[:, 2]), weights=weights))
+
+    hue_share = np.zeros(len(HUES))
+    for (L, a, b), w in zip(labs, weights):
+        if np.hypot(a, b) >= NEUTRAL_CHROMA:
+            hue_share[hue_band(a, b)] += w * np.hypot(a, b)
+    if lightness < 0.4:
+        tone = "Dark"
+    elif lightness > 0.68:
+        tone = "Pale"
+    elif chroma < 0.05:
+        tone = "Muted"
+    elif chroma > 0.09:
+        tone = "Vivid"
+    else:
+        warm = hue_share[[0, 1, 2]].sum() > hue_share[[4, 5, 6]].sum()
+        tone = "Warm" if warm else "Cool"
+    if hue_share.sum() == 0 or chroma < 0.025:
+        return f"{tone} monochrome"
+    order = np.argsort(-hue_share)
+    name = f"{tone} {HUES[order[0]][1]}"
+    if hue_share[order[1]] > 0.45 * hue_share[order[0]]:
+        name += f" & {HUES[order[1]][1]}"
+    return name
+
+
+def cluster_styles(catalog: list[dict]) -> list[dict]:
+    features = np.array([fingerprint(film["palette"]) for film in catalog])
+    k = int(np.clip(round(np.sqrt(len(catalog) / 2)), 3, 8))
+    centers, labels = kmeans_pp(features, k, np.random.default_rng(7))
+    styles, used = [], set()
+    for index in range(k):
+        members = [film for film, label in zip(catalog, labels) if label == index]
+        if not members:
+            continue
+        name = style_name(members)
+        while name in used:
+            name += " II"
+        used.add(name)
+        style_id = re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
+        # Typical palette: the members' swatches merged by hue band
+        merged: dict[int, list] = {}
+        for film in members:
+            for s in film["palette"]:
+                L, a, b = s["lab"]
+                band = -1 - min(2, int(L * 3)) if np.hypot(a, b) < NEUTRAL_CHROMA else hue_band(a, b) * 2 + (L >= 0.55)
+                merged.setdefault(band, []).append((np.array(s["lab"]), s["weight"]))
+        typical = sorted(
+            ((sum(lab * w for lab, w in items) / sum(w for _, w in items), sum(w for _, w in items)) for items in merged.values()),
+            key=lambda lw: -lw[1],
+        )[:5]
+        total = sum(w for _, w in typical)
+        styles.append({
+            "id": style_id,
+            "name": name,
+            "palette": [{"hex": to_hex(lab), "weight": round(float(w / total), 4)} for lab, w in typical],
+            "films": [film["id"] for film in members],
+        })
+        for film in members:
+            film["style"] = style_id
+    return sorted(styles, key=lambda s: -len(s["films"]))
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("films", help="films.json with TMDB metadata")
@@ -168,9 +261,14 @@ def main() -> None:
         print(f"{film['title']:<40} {' '.join(s['hex'] for s in palette)}")
         time.sleep(0.1)  # be gentle with the image CDN
 
+    styles = cluster_styles(catalog)
+    for style in styles:
+        print(f"Style: {style['name']:<28} {len(style['films'])} films")
+
     payload = {
         "generated": date.today().isoformat(),
         "source": "The Movie Database (TMDB)",
+        "styles": styles,
         "films": catalog,
     }
     with open(args.output, "w", encoding="utf-8") as f:

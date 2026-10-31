@@ -9,9 +9,7 @@ export const hasApiKey = () => Boolean(API_KEY);
 
 async function tmdb<T>(path: string, params: Record<string, string> = {}): Promise<T> {
   if (!API_KEY) {
-    throw new Error(
-      "Missing TMDB API key. Create a .env file with VITE_TMDB_API_KEY=your_key",
-    );
+    throw new Error("Missing TMDB API key. Create a .env file with VITE_TMDB_API_KEY=your_key");
   }
   const url = new URL(`${BASE_URL}${path}`);
   url.searchParams.set("api_key", API_KEY);
@@ -27,8 +25,7 @@ export const getTrending = async () =>
     ? tmdb<{ results: Movie[] }>("/trending/movie/week").then((d) => d.results)
     : catalogTrending();
 
-export const getPopular = () =>
-  tmdb<{ results: Movie[] }>("/movie/popular").then((d) => d.results);
+export const getPopular = () => tmdb<{ results: Movie[] }>("/movie/popular").then((d) => d.results);
 
 export const searchMovies = async (query: string) =>
   API_KEY
@@ -46,9 +43,7 @@ export const posterUrl = (
   path: string | null,
   size: "w185" | "w342" | "w500" | "original" = "w500",
 ) =>
-  path
-    ? `${IMG_BASE}/${size}${path}`
-    : `https://placehold.co/500x750/1a1a2e/f5a623?text=No+Poster`;
+  path ? `${IMG_BASE}/${size}${path}` : `https://placehold.co/500x750/1a1a2e/f5a623?text=No+Poster`;
 
 export const backdropUrl = (
   path: string | null,

@@ -56,4 +56,13 @@ export interface CatalogFilm extends Movie {
   trending: boolean;
   palette: Swatch[];
   strip: string[];
+  style?: string;
+}
+
+/** A visual style found by clustering palettes (tools/palettes). */
+export interface FilmStyle {
+  id: string;
+  name: string;
+  palette: { hex: string; weight: number }[];
+  films: number[];
 }

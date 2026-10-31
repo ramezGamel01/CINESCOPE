@@ -14,7 +14,11 @@ export function PosterWall({ posters }: { posters: (string | null)[] }) {
     <div className="poster-wall" aria-hidden="true">
       <div className="poster-wall__plane">
         {columns.map((column, c) => (
-          <div key={c} className={`poster-wall__column ${c % 2 ? "is-down" : ""}`} style={{ animationDuration: `${38 + c * 4}s` }}>
+          <div
+            key={c}
+            className={`poster-wall__column ${c % 2 ? "is-down" : ""}`}
+            style={{ animationDuration: `${38 + c * 4}s` }}
+          >
             {[...column, ...column].map((path, r) => (
               <img key={r} src={posterUrl(path, "w185")} alt="" loading="lazy" decoding="async" />
             ))}

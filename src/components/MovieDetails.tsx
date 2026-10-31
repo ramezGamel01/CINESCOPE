@@ -2,15 +2,16 @@ import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useRef } from "react";
 import { Clock, Palette, Play, Star } from "lucide-react";
-import { accentSwatch } from "@/lib/colorSearch";
+import { accentSwatch, rankBySimilarity } from "@/lib/colorSearch";
 import { extractPalette } from "@/lib/palette";
 import { textOn } from "@/lib/color";
 import { tiltHandlers, useScrollProgress } from "@/hooks/useMotion";
-import { findCatalogFilm } from "@/services/catalog";
+import { catalog, findCatalogFilm } from "@/services/catalog";
 import { backdropUrl, posterUrl } from "@/services/tmdb";
 import type { MovieDetail } from "@/types/movie";
 import { FavoriteButton } from "./FavoriteButton";
 import { ColorStrip, PaletteBar } from "./PaletteBar";
+import { PaletteTools } from "./PaletteTools";
 
 /** Palette from the catalog when available, otherwise extracted in the browser. */
 function useFilmColors(movie: MovieDetail) {
@@ -34,6 +35,7 @@ export function MovieDetails({ movie }: { movie: MovieDetail }) {
   const trailer = movie.videos?.results.find((v) => v.site === "YouTube" && v.type === "Trailer");
   const cast = movie.credits?.cast.slice(0, 8) ?? [];
   const year = movie.release_date ? new Date(movie.release_date).getFullYear() : "";
+  const lookalikes = colors ? rankBySimilarity(catalog, colors.palette, movie.id).slice(0, 6) : [];
 
   return (
     <div
@@ -44,7 +46,10 @@ export function MovieDetails({ movie }: { movie: MovieDetail }) {
           : undefined
       }
     >
-      <div ref={hero} className="film-hero relative -mx-4 h-[52vh] min-h-[320px] overflow-hidden sm:-mx-6 lg:mx-0 lg:rounded-3xl">
+      <div
+        ref={hero}
+        className="film-hero relative -mx-4 h-[52vh] min-h-[320px] overflow-hidden sm:-mx-6 lg:mx-0 lg:rounded-3xl"
+      >
         {backdrop && (
           <img
             src={backdrop}
@@ -70,7 +75,9 @@ export function MovieDetails({ movie }: { movie: MovieDetail }) {
         </div>
 
         <div className="min-w-0">
-          <h1 className="hero-rise font-display text-5xl leading-none tracking-wide sm:text-6xl">{movie.title}</h1>
+          <h1 className="hero-rise font-display text-5xl leading-none tracking-wide sm:text-6xl">
+            {movie.title}
+          </h1>
           {movie.tagline && <p className="mt-3 italic text-muted-foreground">{movie.tagline}</p>}
 
           <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
@@ -135,20 +142,63 @@ export function MovieDetails({ movie }: { movie: MovieDetail }) {
         {colors ? (
           <>
             <PaletteBar palette={colors.palette} className="mt-6 h-16" showHex />
-            <p className="mt-6 text-xs uppercase tracking-[0.2em] text-muted-foreground">Across the frame</p>
+            <p className="mt-6 text-xs uppercase tracking-[0.2em] text-muted-foreground">
+              Across the frame
+            </p>
             <ColorStrip strip={colors.strip} className="mt-2 h-8" />
+            <PaletteTools
+              title={movie.title}
+              year={year}
+              posterUrl={posterUrl(movie.poster_path, "w500")}
+              palette={colors.palette}
+            />
           </>
         ) : (
           <div className="mt-6 h-16 animate-pulse rounded-full bg-muted" />
         )}
       </section>
 
+      {lookalikes.length > 0 && (
+        <section className="mt-12">
+          <h2 className="mb-1 text-lg font-semibold">Films that look like this</h2>
+          <p className="mb-5 text-sm text-muted-foreground">
+            Ranked by how closely their palettes match.
+          </p>
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+            {lookalikes.map((film, i) => (
+              <Link
+                key={film.id}
+                to="/movie/$id"
+                params={{ id: String(film.id) }}
+                className="match-card group block"
+                style={{ "--i": i } as React.CSSProperties}
+              >
+                <div className="aspect-video overflow-hidden rounded-xl">
+                  <img
+                    src={backdropUrl(film.backdrop_path, "w300") ?? ""}
+                    alt=""
+                    loading="lazy"
+                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                </div>
+                <PaletteBar palette={film.palette} className="mt-2 h-1.5" />
+                <p className="mt-1.5 truncate text-sm font-medium">{film.title}</p>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
       {cast.length > 0 && (
         <section className="mt-12">
           <h2 className="mb-4 text-lg font-semibold">Top Cast</h2>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-8">
             {cast.map((c, i) => (
-              <div key={c.id} className="cast-card text-center" style={{ "--i": i } as React.CSSProperties}>
+              <div
+                key={c.id}
+                className="cast-card text-center"
+                style={{ "--i": i } as React.CSSProperties}
+              >
                 <img
                   src={
                     c.profile_path

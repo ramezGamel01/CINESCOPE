@@ -11,7 +11,11 @@ export function PaletteBar({
   showHex?: boolean;
 }) {
   return (
-    <div className={`flex w-full overflow-hidden rounded-full ${className}`} role="img" aria-label={`Colors: ${palette.map((s) => s.hex).join(", ")}`}>
+    <div
+      className={`flex w-full overflow-hidden rounded-full ${className}`}
+      role="img"
+      aria-label={`Colors: ${palette.map((s) => s.hex).join(", ")}`}
+    >
       {palette.map((swatch) => (
         <span
           key={swatch.hex}

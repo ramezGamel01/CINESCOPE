@@ -55,3 +55,21 @@ export const PRESETS: ColorPreset[] = [
 ];
 
 export const presetTargets = (preset: ColorPreset): Lab[] => preset.colors.map(hexToOklab);
+
+/** How alike two palettes are: each one's colors looked up in the other, both ways. */
+export function paletteSimilarity(a: Swatch[], b: Swatch[]): number {
+  const oneWay = (from: Swatch[], to: Swatch[]) =>
+    from.reduce((sum, swatch) => sum + swatch.weight * colorScore(to, swatch.lab), 0);
+  return (oneWay(a, b) + oneWay(b, a)) / 2;
+}
+
+export function rankBySimilarity<T extends { id: number; palette: Swatch[] }>(
+  films: T[],
+  palette: Swatch[],
+  excludeId?: number,
+): (T & { score: number })[] {
+  return films
+    .filter((film) => film.id !== excludeId)
+    .map((film) => ({ ...film, score: paletteSimilarity(palette, film.palette) }))
+    .sort((a, b) => b.score - a.score);
+}

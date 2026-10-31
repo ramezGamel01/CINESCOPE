@@ -33,18 +33,30 @@ function HomePage() {
         <PosterWall posters={catalog.map((film) => film.poster_path)} />
         <div className="hero__shade" />
         <div className="hero__content relative mx-auto max-w-3xl text-center">
-          <p className="hero-rise text-sm uppercase tracking-[0.35em] text-spectrum" style={{ "--d": 0 } as React.CSSProperties}>
+          <p
+            className="hero-rise text-sm uppercase tracking-[0.35em] text-spectrum"
+            style={{ "--d": 0 } as React.CSSProperties}
+          >
             CineScope
           </p>
-          <h1 className="hero-rise mt-5 font-display text-6xl leading-[0.92] tracking-wide sm:text-8xl" style={{ "--d": 1 } as React.CSSProperties}>
+          <h1
+            className="hero-rise mt-5 font-display text-6xl leading-[0.92] tracking-wide sm:text-8xl"
+            style={{ "--d": 1 } as React.CSSProperties}
+          >
             Find films by
             <br />
             <span className="text-spectrum">their colors</span>
           </h1>
-          <p className="hero-rise mx-auto mt-6 max-w-xl text-lg text-muted-foreground" style={{ "--d": 2 } as React.CSSProperties}>
+          <p
+            className="hero-rise mx-auto mt-6 max-w-xl text-lg text-muted-foreground"
+            style={{ "--d": 2 } as React.CSSProperties}
+          >
             Pick a color and get the movies that look like it, or search any title the usual way.
           </p>
-          <div className="hero-rise mt-8 flex flex-col items-center gap-4" style={{ "--d": 3 } as React.CSSProperties}>
+          <div
+            className="hero-rise mt-8 flex flex-col items-center gap-4"
+            style={{ "--d": 3 } as React.CSSProperties}
+          >
             <Link to="/colors" className="spectrum-button">
               <Palette className="h-5 w-5" /> Search by color <ArrowRight className="h-4 w-4" />
             </Link>

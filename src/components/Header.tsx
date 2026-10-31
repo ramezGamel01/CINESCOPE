@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Film, Heart, Home, Palette, Search } from "lucide-react";
+import { Film, Heart, Home, Orbit, Palette, Search } from "lucide-react";
 import { useState } from "react";
 
 export function Header() {
@@ -15,7 +15,11 @@ export function Header() {
     setOpen(false);
   };
 
-  const navLink = (to: "/" | "/colors" | "/favorites", label: string, Icon: typeof Home) => (
+  const navLink = (
+    to: "/" | "/colors" | "/universe" | "/favorites",
+    label: string,
+    Icon: typeof Home,
+  ) => (
     <Link
       to={to}
       activeOptions={{ exact: to === "/" }}
@@ -56,6 +60,7 @@ export function Header() {
         <nav className="hidden items-center gap-6 md:flex">
           {navLink("/", "Home", Home)}
           {navLink("/colors", "Colors", Palette)}
+          {navLink("/universe", "Universe", Orbit)}
           {navLink("/favorites", "Favorites", Heart)}
         </nav>
 
@@ -89,6 +94,7 @@ export function Header() {
             <div className="flex gap-6">
               {navLink("/", "Home", Home)}
               {navLink("/colors", "Colors", Palette)}
+              {navLink("/universe", "Universe", Orbit)}
               {navLink("/favorites", "Favorites", Heart)}
             </div>
           </div>

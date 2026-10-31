@@ -27,11 +27,17 @@ function loadImage(url: string): Promise<HTMLImageElement> {
     img.crossOrigin = "anonymous";
     img.onload = () => resolve(img);
     img.onerror = () => reject(new Error("Image failed to load"));
-    img.src = url;
+    // A separate cache entry: the copy the page already shows may have been
+    // cached without the CORS header a canvas needs
+    img.src = url.startsWith("http") ? `${url}${url.includes("?") ? "&" : "?"}canvas` : url;
   });
 }
 
-function kmeans(points: Lab[], k: number, random: () => number): { centers: Lab[]; counts: number[] } {
+function kmeans(
+  points: Lab[],
+  k: number,
+  random: () => number,
+): { centers: Lab[]; counts: number[] } {
   const centers: Lab[] = [points[Math.floor(random() * points.length)]!];
   while (centers.length < k) {
     const dist = points.map((p) => Math.min(...centers.map((c) => distance(p, c) ** 2)));
@@ -45,13 +51,16 @@ function kmeans(points: Lab[], k: number, random: () => number): { centers: Lab[
   for (let iteration = 0; iteration < 25; iteration++) {
     points.forEach((p, i) => {
       let best = 0;
-      for (let c = 1; c < k; c++) if (distance(p, centers[c]!) < distance(p, centers[best]!)) best = c;
+      for (let c = 1; c < k; c++)
+        if (distance(p, centers[c]!) < distance(p, centers[best]!)) best = c;
       labels[i] = best;
     });
     for (let c = 0; c < k; c++) {
       const members = points.filter((_, i) => labels[i] === c);
       if (!members.length) continue;
-      centers[c] = [0, 1, 2].map((axis) => members.reduce((s, m) => s + m[axis]!, 0) / members.length) as Lab;
+      centers[c] = [0, 1, 2].map(
+        (axis) => members.reduce((s, m) => s + m[axis]!, 0) / members.length,
+      ) as Lab;
     }
   }
   const counts = new Array<number>(k).fill(0);
@@ -59,7 +68,10 @@ function kmeans(points: Lab[], k: number, random: () => number): { centers: Lab[
   return { centers, counts };
 }
 
-export async function extractPalette(url: string, seed = 1): Promise<{ palette: Swatch[]; strip: string[] }> {
+export async function extractPalette(
+  url: string,
+  seed = 1,
+): Promise<{ palette: Swatch[]; strip: string[] }> {
   const img = await loadImage(url);
   const width = 120;
   const height = Math.round((width * img.naturalHeight) / img.naturalWidth);
@@ -89,7 +101,8 @@ export async function extractPalette(url: string, seed = 1): Promise<{ palette: 
   if (!pixels.length) throw new Error("Image too dark to read");
 
   const random = seededRandom(seed);
-  const sample = pixels.length > 4000 ? pixels.filter(() => random() < 4000 / pixels.length) : pixels;
+  const sample =
+    pixels.length > 4000 ? pixels.filter(() => random() < 4000 / pixels.length) : pixels;
   const { centers, counts } = kmeans(sample, CLUSTERS, random);
   const total = counts.reduce((a, b) => a + b, 0);
 
@@ -101,7 +114,9 @@ export async function extractPalette(url: string, seed = 1): Promise<{ palette: 
       const twin = merged.find((m) => distance(m.lab, swatch.lab) < MERGE_DISTANCE);
       if (!twin) return void merged.push(swatch);
       const weight = twin.weight + swatch.weight;
-      twin.lab = [0, 1, 2].map((a) => (twin.lab[a]! * twin.weight + swatch.lab[a]! * swatch.weight) / weight) as Lab;
+      twin.lab = [0, 1, 2].map(
+        (a) => (twin.lab[a]! * twin.weight + swatch.lab[a]! * swatch.weight) / weight,
+      ) as Lab;
       twin.weight = weight;
     });
 
